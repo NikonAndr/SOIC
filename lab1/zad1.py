@@ -28,15 +28,24 @@ def h3(t):
     else:
         return 0
 
-def f_i(N, RANGE, f, factor, kernel_f):
+def f_i(N, RANGE, f, factor, kernel_f, custom_x=None, custom_y=None):
 
-    x = np.linspace(RANGE[0], RANGE[1], N)
-    y = f(x)
+    if custom_x is not None:
+        x = np.array(custom_x)
+
+        if custom_y is not None:
+            y = np.array(custom_y)
+        else:
+            y = f(x)
+        
+        w = np.mean(np.diff(x))
+    else:
+        x = np.linspace(RANGE[0], RANGE[1], N)
+        y = f(x)
+        w = (RANGE[1] - RANGE[0]) / (N - 1)
 
     x_m = np.linspace(RANGE[0], RANGE[1], N * factor)
     y_m = np.zeros_like(x_m)
-
-    w = (RANGE[1] - RANGE[0]) / (N - 1)
 
     for i in range(len(x_m)):
         for j in range(len(x)):
@@ -96,6 +105,38 @@ for N in Ns:
 for N, result in zip(Ns, results):
     print(f"N={N} -> MSE={result:.7f}")
 
+#Examine impact of distribution of sample points on the quelity of interpolation (MSE)
+#Linspace distribution
+x_m, y_m = f_i(N, RANGE, f1, 4, h3)[2:4]
+mse_lin = mse(x_m, y_m, f1)
+print(f"MSE for Linspace dist: {mse_lin:.7f}")
+
+x_normal = np.random.normal(loc=0, scale=1, size=N)
+x_normal = np.clip(x_normal, RANGE[0], RANGE[1])
+x_normal = np.sort(x_normal)
+
+x_m_norm, y_m_norm = f_i(N, RANGE, f1, 4, h3, x_normal)[2:4]
+
+mse_norm = mse(x_m_norm, y_m_norm, f1)
+print(f"MSE for normal dist: {mse_norm:.7f}")
+
+#Examine impact of sequencial interpolation 
+#Single interpolation
+x_m_16, y_m_16 = f_i(N, RANGE, f1, 16, h3)[2:4]
+mse_single = mse(x_m_16, y_m_16, f1)
+print(f"Single interpolation x16: {mse_single:.10f}")
+
+#sequencial interpolation 
+x_seq = np.linspace(RANGE[0], RANGE[1], N)
+y_seq = f1(x_seq)
+
+for i in range(4):
+    x_new, y_new = f_i(len(x_seq), RANGE, f1, 2, h3, x_seq, y_seq)[2:4]
+    x_seq = x_new
+    y_seq = y_new 
+
+mse_seq = mse(x_seq, y_seq, f1)
+print(f"Sequencial interpolation x2x2x2x2: {mse_seq:.10f}")
 
 
 
