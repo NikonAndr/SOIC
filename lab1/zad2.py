@@ -99,7 +99,7 @@ def maxpool(image, factor):
 def mse(a, b):
     return np.mean((a - b) ** 2)
 
-img = plt.imread("lab1/gigachad.png")
+img = plt.imread("lab1/image.png")
 
 if img.ndim == 3:
     img = img.mean(axis=2)
@@ -109,7 +109,7 @@ plt.figure(figsize=(12,4))
 
 plt.subplot(1,3,1)
 plt.imshow(img, cmap='gray')
-plt.title("Orginal")
+plt.title("Original")
 plt.axis('off')
 
 K = mean_kernel(3)
